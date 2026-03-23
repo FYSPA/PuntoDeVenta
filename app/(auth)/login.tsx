@@ -1,113 +1,213 @@
+import { Ionicons } from '@expo/vector-icons'; // Importamos los iconos
 import { router } from 'expo-router';
 import React, { useState } from 'react';
-import { Alert, StyleSheet, TextInput, TouchableOpacity, View } from 'react-native';
+import {
+    Alert,
+    Keyboard,
+    KeyboardAvoidingView,
+    Platform,
+    StyleSheet,
+    TextInput,
+    TouchableOpacity,
+    TouchableWithoutFeedback,
+    View
+} from 'react-native';
 
 import { ThemedText } from '@/components/themed-text';
 import { ThemedView } from '@/components/themed-view';
 import { useColorScheme } from '@/hooks/use-color-scheme';
+import { Link } from 'expo-router';
 
 export default function LoginScreen() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
+    const [focusedInput, setFocusedInput] = useState<string | null>(null); // Para saber qué input está activo
+
     const colorScheme = useColorScheme();
+    const isDark = colorScheme === 'dark';
 
     const handleLogin = () => {
         if (email && password) {
-            // Aquí iría tu lógica de Firebase/Supabase/API
             console.log('Login con:', email, password);
-
-            // .replace es clave para que el usuario no pueda "volver atrás" al login
             router.replace('/(tabs)/home');
         } else {
-            Alert.alert('Error', 'Por favor rellena todos los campos');
+            Alert.alert('Acceso denegado', 'Por favor rellena todos los campos para continuar.');
         }
     };
 
+    // Colores dinámicos dependiendo del tema (Claro / Oscuro)
+    const inputBgColor = isDark ? '#1E1E1E' : '#F5F5F5';
+    const textColor = isDark ? '#FFFFFF' : '#000000';
+    const iconColor = isDark ? '#888888' : '#A0A0A0';
+    const activeBorderColor = '#00e5ff'; // Un cyan tecnológico para cuando escribes
+
     return (
-        <ThemedView style={styles.container}>
-            <View style={styles.header}>
-                <ThemedText type="title">Bienvenido</ThemedText>
-                <ThemedText style={styles.subtitle}>Inicia sesión para continuar</ThemedText>
-            </View>
+        <KeyboardAvoidingView
+            style={{ flex: 1 }}
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+        >
+            <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+                <ThemedView style={styles.container}>
 
-            <View style={styles.form}>
-                <ThemedText style={styles.label}>Correo electrónico</ThemedText>
-                <TextInput
-                    style={[styles.input, { color: colorScheme === 'dark' ? '#fff' : '#000', borderColor: colorScheme === 'dark' ? '#444' : '#ccc' }]}
-                    placeholder="ejemplo@correo.com"
-                    placeholderTextColor="#888"
-                    value={email}
-                    onChangeText={setEmail}
-                    autoCapitalize="none"
-                    keyboardType="email-address"
-                />
+                    {/* Botón de volver atrás arriba a la izquierda (Más profesional) */}
+                    <TouchableOpacity onPress={() => router.back()} style={styles.topBackButton}>
+                        <Ionicons name="arrow-back" size={24} color={textColor} />
+                    </TouchableOpacity>
 
-                <ThemedText style={styles.label}>Contraseña</ThemedText>
-                <TextInput
-                    style={[styles.input, { color: colorScheme === 'dark' ? '#fff' : '#000', borderColor: colorScheme === 'dark' ? '#444' : '#ccc' }]}
-                    placeholder="********"
-                    placeholderTextColor="#888"
-                    value={password}
-                    onChangeText={setPassword}
-                    secureTextEntry
-                />
+                    <View style={styles.header}>
+                        <ThemedText type="title" style={styles.title}>¡Hola de nuevo! 👋</ThemedText>
+                        <ThemedText style={styles.subtitle}>Inicia sesión para acceder a tu Punto de Venta</ThemedText>
+                    </View>
 
-                <TouchableOpacity style={styles.button} onPress={handleLogin}>
-                    <ThemedText style={styles.buttonText}>Entrar</ThemedText>
-                </TouchableOpacity>
+                    <View style={styles.form}>
+                        {/* INPUT: CORREO */}
+                        <ThemedText style={styles.label}>Correo electrónico</ThemedText>
+                        <View style={[
+                            styles.inputContainer,
+                            { backgroundColor: inputBgColor },
+                            focusedInput === 'email' && { borderColor: activeBorderColor, borderWidth: 1 }
+                        ]}>
+                            <Ionicons name="mail-outline" size={20} color={focusedInput === 'email' ? activeBorderColor : iconColor} style={styles.icon} />
+                            <TextInput
+                                style={[styles.input, { color: textColor }]}
+                                placeholder="ejemplo@correo.com"
+                                placeholderTextColor="#888"
+                                value={email}
+                                onChangeText={setEmail}
+                                autoCapitalize="none"
+                                keyboardType="email-address"
+                                onFocus={() => setFocusedInput('email')}
+                                onBlur={() => setFocusedInput(null)}
+                            />
+                        </View>
 
-                <TouchableOpacity onPress={() => router.back()} style={styles.backButton}>
-                    <ThemedText type="link">Volver atrás</ThemedText>
-                </TouchableOpacity>
-            </View>
-        </ThemedView>
+                        {/* INPUT: CONTRASEÑA */}
+                        <ThemedText style={styles.label}>Contraseña</ThemedText>
+                        <View style={[
+                            styles.inputContainer,
+                            { backgroundColor: inputBgColor },
+                            focusedInput === 'password' && { borderColor: activeBorderColor, borderWidth: 1 }
+                        ]}>
+                            <Ionicons name="lock-closed-outline" size={20} color={focusedInput === 'password' ? activeBorderColor : iconColor} style={styles.icon} />
+                            <TextInput
+                                style={[styles.input, { color: textColor }]}
+                                placeholder="••••••••"
+                                placeholderTextColor="#888"
+                                value={password}
+                                onChangeText={setPassword}
+                                secureTextEntry={!showPassword}
+                                onFocus={() => setFocusedInput('password')}
+                                onBlur={() => setFocusedInput(null)}
+                            />
+                            {/* Ojito para mostrar/ocultar contraseña */}
+                            <TouchableOpacity onPress={() => setShowPassword(!showPassword)} style={styles.eyeIcon}>
+                                <Ionicons name={showPassword ? "eye-off-outline" : "eye-outline"} size={20} color={iconColor} />
+                            </TouchableOpacity>
+                        </View>
+
+                        {/* Link de contraseña olvidada (Opcional pero da buen toque) */}
+                        <Link href="/(auth)/register" asChild>
+                            <TouchableOpacity style={styles.forgotPassword}>
+                                <ThemedText style={styles.forgotPasswordText}>¿No tienes cuenta? Crea una</ThemedText>
+                            </TouchableOpacity>
+                        </Link>
+
+                        {/* BOTÓN PRINCIPAL */}
+                        <TouchableOpacity style={styles.button} activeOpacity={0.8} onPress={handleLogin}>
+                            <ThemedText style={styles.buttonText}>Ingresar</ThemedText>
+                            <Ionicons name="log-in-outline" size={20} color="#fff" style={{ marginLeft: 8 }} />
+                        </TouchableOpacity>
+                    </View>
+
+                </ThemedView>
+            </TouchableWithoutFeedback>
+        </KeyboardAvoidingView>
     );
 }
 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
-        padding: 20,
+        padding: 24,
         justifyContent: 'center',
+    },
+    topBackButton: {
+        position: 'absolute',
+        top: Platform.OS === 'ios' ? 60 : 40,
+        left: 20,
+        zIndex: 1,
+        padding: 10,
     },
     header: {
         marginBottom: 40,
+        marginTop: 40,
+    },
+    title: {
+        fontSize: 32,
+        fontWeight: 'bold',
+        marginBottom: 8,
     },
     subtitle: {
         fontSize: 16,
         opacity: 0.7,
-        marginTop: 5,
+        lineHeight: 24,
     },
     form: {
-        gap: 15,
+        gap: 16,
     },
     label: {
         fontSize: 14,
         fontWeight: '600',
-        marginBottom: -5,
+        marginBottom: -8,
+        marginLeft: 4,
+    },
+    inputContainer: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        height: 55,
+        borderRadius: 14,
+        borderWidth: 1,
+        borderColor: 'transparent', // Por defecto es transparente, se pinta al hacer focus
+        paddingHorizontal: 15,
+    },
+    icon: {
+        marginRight: 10,
     },
     input: {
-        height: 50,
-        borderWidth: 1,
-        borderRadius: 10,
-        paddingHorizontal: 15,
+        flex: 1,
         fontSize: 16,
+        height: '100%',
+    },
+    eyeIcon: {
+        padding: 5,
+    },
+    forgotPassword: {
+        alignSelf: 'flex-end',
+        marginTop: -5,
+    },
+    forgotPasswordText: {
+        color: '#00e5ff', // Mismo azul tech para mantener la paleta
+        fontSize: 14,
+        fontWeight: '600',
     },
     button: {
-        backgroundColor: '#007AFF', // Color azul estándar de iOS
-        height: 50,
-        borderRadius: 10,
+        backgroundColor: '#1E90FF', // Un azul vibrante tipo DodgerBlue
+        flexDirection: 'row',
+        height: 55,
+        borderRadius: 14,
         justifyContent: 'center',
         alignItems: 'center',
-        marginTop: 10,
+        marginTop: 20,
+        shadowColor: '#1E90FF',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.3,
+        shadowRadius: 8,
+        elevation: 5, // Sombra para Android
     },
     buttonText: {
         color: '#fff',
-        fontSize: 16,
+        fontSize: 18,
         fontWeight: 'bold',
-    },
-    backButton: {
-        marginTop: 20,
-        alignItems: 'center',
     },
 });

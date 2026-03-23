@@ -9,7 +9,7 @@ export default function RootLayout() {
   const colorScheme = useColorScheme();
 
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
+    <ThemeProvider value={colorScheme === 'light' ? DefaultTheme : DarkTheme}>
       <Stack screenOptions={{ headerShown: false }}>
         {/* 1. Pantalla de Bienvenida (lo que era tu modal) */}
         <Stack.Screen name="index" />
