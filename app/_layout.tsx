@@ -5,18 +5,20 @@ import 'react-native-reanimated';
 
 import { useColorScheme } from '@/hooks/use-color-scheme';
 
-export const unstable_settings = {
-  anchor: '(tabs)',
-};
-
 export default function RootLayout() {
   const colorScheme = useColorScheme();
 
   return (
     <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="modal" options={{ presentation: 'modal', title: 'Modal' }} />
+      <Stack screenOptions={{ headerShown: false }}>
+        {/* 1. Pantalla de Bienvenida (lo que era tu modal) */}
+        <Stack.Screen name="index" />
+
+        {/* 2. Grupo de Autenticación (Deberías crear una carpeta (auth)) */}
+        <Stack.Screen name="(auth)" options={{ presentation: 'modal' }} />
+
+        {/* 3. La aplicación principal una vez logueado */}
+        <Stack.Screen name="(tabs)" />
       </Stack>
       <StatusBar style="auto" />
     </ThemeProvider>
