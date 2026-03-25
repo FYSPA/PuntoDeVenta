@@ -30,7 +30,7 @@ export default function LoginScreen() {
     const handleLogin = () => {
         if (email && password) {
             console.log('Login con:', email, password);
-            router.replace('/(tabs)/home');
+            router.replace('/(tabs)/entradas');
         } else {
             Alert.alert('Acceso denegado', 'Por favor rellena todos los campos para continuar.');
         }
